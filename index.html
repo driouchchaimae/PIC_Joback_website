@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7c6dc">
+  <title>PIC — Procédés et Ingénierie Chimique</title>
+  <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+  <style>
+    :root {
+      --pink-50:#fff7fb; --pink-100:#fde8f2; --pink-200:#f8cadd;
+      --pink-300:#efa6c7; --pink-500:#d94f91; --pink-700:#9e285f;
+      --plum:#672448; --ink:#572c45; --muted:#986b83; --white:#fff;
+      --shadow:0 14px 40px rgba(166,65,116,.12);
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:100vh; color:var(--ink);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, #fff 0, transparent 26%),
+        radial-gradient(circle at 90% 20%, #f8d8e8 0, transparent 25%),
+        linear-gradient(135deg,#fff8fc,#f9d9e9 55%,#fff2f8);
+    }
+    button,input { font:inherit; }
+    button { cursor:pointer; }
+    .hidden { display:none !important; }
+    .topbar {
+      width:min(1440px, calc(100% - 36px)); margin:18px auto 0;
+      display:flex; align-items:center; justify-content:space-between; gap:18px;
+      padding:12px 20px; border:1px solid rgba(255,255,255,.9);
+      border-radius:24px; background:rgba(255,255,255,.72);
+      box-shadow:var(--shadow); backdrop-filter:blur(14px);
+    }
+    .brand { display:flex; align-items:center; gap:12px; min-width:230px; }
+    .brand-mark { width:58px; height:58px; flex:none; }
+    .brand-name { color:var(--pink-700); font-family:Georgia,serif; font-size:30px; font-weight:800; letter-spacing:1px; }
+    .brand-sub { display:block; color:var(--muted); font-size:11px; line-height:1.3; font-weight:700; }
+    nav { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+    nav button,.logout {
+      border:0; background:transparent; color:var(--plum); padding:11px 15px;
+      border-radius:14px; font-weight:700;
+    }
+    nav button:hover { background:var(--pink-100); }
+    .logout,.primary {
+      color:white; background:linear-gradient(120deg,var(--pink-500),#bd3678);
+      box-shadow:0 8px 18px rgba(201,61,126,.2);
+    }
+    .logout:hover,.primary:hover { filter:brightness(.97); transform:translateY(-1px); }
+    .hero {
+      width:min(1440px, calc(100% - 36px)); margin:22px auto 18px;
+      padding:34px 28px; min-height:210px; border-radius:28px; overflow:hidden;
+      position:relative; display:flex; align-items:center; justify-content:center;
+      text-align:center; background:linear-gradient(110deg,rgba(255,255,255,.88),rgba(255,224,239,.83));
+      border:1px solid white; box-shadow:var(--shadow);
+    }
+    .hero:before,.hero:after { content:""; position:absolute; border:1px solid #efb0cf; opacity:.5; border-radius:50%; }
+    .hero:before { width:230px;height:230px;left:-90px;top:-100px; }
+    .hero:after { width:190px;height:190px;right:-60px;bottom:-100px; }
+    .hero h1 { margin:0; color:var(--pink-700); font:700 clamp(32px,5vw,58px) Georgia,serif; }
+    .hero p { margin:12px 0 0; color:#a53b70; font:italic 18px Georgia,serif; }
+    .star { color:#e9a928; }
+    .layout {
+      width:min(1440px, calc(100% - 36px)); margin:0 auto 28px;
+      display:grid; grid-template-columns:310px minmax(0,1fr); gap:20px;
+    }
+    .panel {
+      border:1px solid rgba(255,255,255,.95); border-radius:25px;
+      background:rgba(255,255,255,.77); box-shadow:var(--shadow);
+      padding:24px; min-width:0;
+    }
+    .login-panel h2,.section-title { margin:0 0 8px; color:var(--pink-700); font:700 27px Georgia,serif; }
+    .muted { color:var(--muted); }
+    .field { display:block; margin:14px 0; }
+    .field span { display:block; font-size:13px; font-weight:700; margin-bottom:7px; }
+    input {
+      width:100%; padding:14px 15px; border-radius:13px;
+      border:1px solid #e9a9c8; background:#fffafd; color:var(--ink); outline:none;
+    }
+    input:focus { border-color:var(--pink-500); box-shadow:0 0 0 3px #f9d8e8; }
+    .primary { border:0; border-radius:14px; padding:14px 20px; font-weight:800; }
+    .full { width:100%; }
+    .welcome {
+      margin-top:20px; padding:16px; border-radius:17px;
+      background:linear-gradient(120deg,#ffe4f0,#f9c8df); color:var(--plum);
+    }
+    .welcome strong { display:block; font:700 22px Georgia,serif; margin-bottom:5px; }
+    .quote { margin:22px 0 0; text-align:center; color:#a64c7a; font:italic 17px Georgia,serif; }
+    .main-panel { padding:25px; }
+    .section-head { display:flex; align-items:center; gap:14px; margin-bottom:18px; }
+    .flask { font-size:35px; }
+    .section-title { font-size:32px; margin:0; }
+    .subtitle { margin:5px 0 0; color:#a44a77; font:italic 16px Georgia,serif; }
+    .search-row { display:grid; grid-template-columns:minmax(0,1fr) 160px; gap:10px; margin:18px 0; }
+    .search-row input { min-width:0; }
+    .results-grid { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(260px,.9fr); gap:16px; }
+    .subpanel { background:linear-gradient(145deg,#fffafd,#ffedf5); border:1px solid #f2c2d9; border-radius:20px; padding:16px; min-width:0; }
+    .subpanel h3 { margin:0 0 12px; color:var(--pink-700); font:700 20px Georgia,serif; }
+    #viewer { width:100%; height:300px; border-radius:15px; background:radial-gradient(circle,#fff 0,#f8ddec 75%); overflow:hidden; }
+    .viewer-note { font-size:12px; color:var(--muted); margin:9px 2px 0; }
+    .result-line { padding:13px 14px; background:#fbd5e7; border-radius:13px; margin:12px 0; overflow-wrap:anywhere; }
+    .temperature { text-align:center; color:var(--pink-700); font:700 clamp(28px,4vw,42px) Georgia,serif; }
+    .status { min-height:22px; margin:12px 0 0; color:var(--pink-700); font-weight:700; }
+    footer { text-align:center; color:#a66b89; padding:4px 16px 24px; font-size:13px; }
+    .login-gate { width:min(460px,calc(100% - 32px)); margin:55px auto; }
+    .login-gate .panel { padding:30px; }
+    .login-gate h1 { color:var(--pink-700); font:700 32px Georgia,serif; }
+    .small { font-size:12px; line-height:1.5; }
+    @media(max-width:900px) {
+      .layout { grid-template-columns:1fr; }
+      .brand { min-width:0; }
+      .topbar { flex-wrap:wrap; justify-content:center; }
+      .results-grid { grid-template-columns:1fr; }
+    }
+    @media(max-width:560px) {
+      .topbar,.hero,.layout { width:calc(100% - 20px); }
+      .topbar { padding:10px; }
+      .brand-name { font-size:25px; }
+      nav { width:100%; }
+      nav button { padding:9px; font-size:13px; }
+      .hero { padding:28px 14px; }
+      .search-row { grid-template-columns:1fr; }
+      .panel,.main-panel { padding:17px; }
+      #viewer { height:260px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 100 100" role="img" aria-label="Logo PIC">
+        <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#ee8bb9"/><stop offset="1" stop-color="#9e285f"/></linearGradient></defs>
+        <circle cx="50" cy="50" r="45" fill="#fff0f7" stroke="url(#g)" stroke-width="4"/>
+        <path d="M26 70V49h10V34h9v36M48 70V25h9v45M62 70V43h11v27" fill="none" stroke="#b83b79" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M19 76h62M22 28l9-9 9 9M66 22l8-8 8 8" fill="none" stroke="#d94f91" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="50" cy="14" r="4" fill="#d94f91"/><circle cx="83" cy="50" r="3" fill="#d94f91"/>
+      </svg>
+      <div><span class="brand-name">PIC</span><span class="brand-sub">PROCÉDÉS & INGÉNIERIE CHIMIQUE</span></div>
+    </div>
+    <nav>
+      <button type="button" onclick="scrollTo({top:0,behavior:'smooth'})">⌂ Accueil</button>
+      <button type="button" onclick="document.getElementById('calculator').scrollIntoView({behavior:'smooth'})">▦ Calculateur</button>
+      <button type="button" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">ⓘ À propos</button>
+    </nav>
+    <button id="logoutBtn" class="logout hidden" type="button">Déconnexion</button>
+  </header>
+
+  <section id="loginGate" class="login-gate">
+    <div class="panel">
+      <h1>Bienvenue chez PIC <span class="star">★</span></h1>
+      <p class="muted">Connectez-vous pour accéder à votre espace de calcul chimique.</p>
+      <form id="loginForm">
+        <label class="field"><span>Nom d'utilisateur</span><input id="username" autocomplete="username" required placeholder="Votre nom d'utilisateur"></label>
+        <label class="field"><span>Mot de passe</span><input id="password" type="password" autocomplete="current-password" required placeholder="Votre mot de passe"></label>
+        <button class="primary full" type="submit">Se connecter</button>
+      </form>
+      <p class="small muted">Prototype pédagogique : cette connexion est une démonstration côté navigateur, pas un système de sécurité pour de vrais comptes.</p>
+      <p id="loginStatus" class="status" role="status"></p>
+    </div>
+  </section>
+
+  <main id="app" class="hidden">
+    <section class="hero">
+      <div>
+        <h1>Welcome to PIC <span class="star">★</span></h1>
+        <p>Innovation en génie chimique, calculs en toute simplicité</p>
+      </div>
+    </section>
+
+    <div class="layout">
+      <aside class="panel login-panel">
+        <h2>Bonjour <span id="helloUser">User</span> ! <span class="star">★</span></h2>
+        <p class="muted">Bienvenue sur votre plateforme de calcul chimique.</p>
+        <div class="welcome"><strong>🧪 Espace laboratoire</strong><span>Explorez les propriétés des molécules avec la méthode Joback.</span></div>
+        <p class="quote">« La chimie, une science qui façonne notre avenir »</p>
+      </aside>
+
+      <section id="calculator" class="panel main-panel">
+        <div class="section-head">
+          <span class="flask">⚗</span>
+          <div><h2 class="section-title">Calculateur Joback</h2><p class="subtitle">Estimation de la température d’ébullition par la méthode Joback</p></div>
+        </div>
+        <form id="calcForm" class="search-row">
+          <input id="moleculeName" required placeholder="Entrez le nom de votre molécule (ex. : ethanol)">
+          <button class="primary" type="submit">▦ Calculer</button>
+        </form>
+        <p id="calcStatus" class="status" role="status"></p>
+        <div class="results-grid">
+          <section class="subpanel">
+            <h3>⬡ Molécule en 3D</h3>
+            <div id="viewer" aria-label="Visualisation 3D de la molécule"></div>
+            <p id="viewerNote" class="viewer-note">Saisissez une molécule puis lancez le calcul pour tenter de charger sa structure 3D.</p>
+          </section>
+          <section class="subpanel">
+            <h3>▥ Résultats</h3>
+            <div class="result-line"><strong>Groupes chimiques détectés :</strong><p id="groups">En attente d'un calcul…</p></div>
+            <div class="result-line"><strong>Température d’ébullition estimée :</strong><p id="temperature" class="temperature">— K</p></div>
+          </section>
+        </div>
+      </section>
+    </div>
+    <section id="about" class="panel" style="width:min(1440px,calc(100% - 36px));margin:0 auto 24px;text-align:center">
+      <h2 class="section-title">À propos de PIC</h2>
+      <p class="muted">Procédés et Ingénierie Chimique — un espace pédagogique pour explorer les groupes fonctionnels et estimer les propriétés physiques avec la méthode de Joback.</p>
+    </section>
+  </main>
+  <footer>♥ Powered by the Joback Method &nbsp; | &nbsp; Designed for PIC — Procédés et Ingénierie Chimique</footer>
+
+<script>
+  const loginGate = document.getElementById('loginGate');
+  const app = document.getElementById('app');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const viewerElement = document.getElementById('viewer');
+  let viewer = null;
+
+  function showApp(username) {
+    document.getElementById('helloUser').textContent = username;
+    loginGate.classList.add('hidden');
+    app.classList.remove('hidden');
+    logoutBtn.classList.remove('hidden');
+    if (window.$3Dmol && !viewer) {
+      viewer = $3Dmol.createViewer(viewerElement, {backgroundColor:'#f8e3ef'});
+    }
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    if (!username || !password) {
+      document.getElementById('loginStatus').textContent = 'Veuillez remplir les deux champs.';
+      return;
+    }
+    // Démonstration uniquement : ne pas utiliser pour protéger des données réelles.
+    sessionStorage.setItem('picDemoUser', username);
+    showApp(username);
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    sessionStorage.removeItem('picDemoUser');
+    app.classList.add('hidden');
+    loginGate.classList.remove('hidden');
+    logoutBtn.classList.add('hidden');
+    document.getElementById('password').value = '';
+  });
+
+  const savedUser = sessionStorage.getItem('picDemoUser');
+  if (savedUser) showApp(savedUser);
+
+  document.getElementById('calcForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = document.getElementById('moleculeName').value.trim();
+    const status = document.getElementById('calcStatus');
+    const groups = document.getElementById('groups');
+    const temperature = document.getElementById('temperature');
+    status.textContent = 'Calcul en cours…';
+    groups.textContent = '—';
+    temperature.textContent = '— K';
+
+    try {
+      const response = await fetch('/api', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({nom:name})
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.erreur || 'Le calcul a échoué.');
+      groups.textContent = typeof data.groupes === 'string' ? data.groupes : JSON.stringify(data.groupes);
+      const temp = Number(data.temperature);
+      temperature.textContent = Number.isFinite(temp) ? `${temp.toFixed(2)} K` : `${data.temperature} K`;
+      status.textContent = 'Calcul terminé avec succès.';
+      loadMolecule3D(name);
+    } catch (error) {
+      status.textContent = `Erreur : ${error.message}`;
+    }
+  });
+
+  async function loadMolecule3D(name) {
+    const note = document.getElementById('viewerNote');
+    if (!window.$3Dmol || !viewer) {
+      note.textContent = 'La bibliothèque de visualisation 3D n’a pas pu être chargée.';
+      return;
+    }
+    note.textContent = 'Recherche de la structure 3D…';
+    try {
+      const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(name)}/SDF?record_type=3d`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Structure 3D non disponible pour ce nom.');
+      const sdf = await response.text();
+      viewer.clear();
+      viewer.addModel(sdf, 'sdf');
+      viewer.setStyle({}, {stick:{radius:0.18}, sphere:{scale:0.28}});
+      viewer.zoomTo();
+      viewer.render();
+      note.textContent = `Structure 3D chargée pour ${name}. Vous pouvez la faire tourner et zoomer.`;
+    } catch (error) {
+      viewer.clear(); viewer.render();
+      note.textContent = `${error.message} Essayez un nom de molécule reconnu par PubChem, par exemple ethanol.`;
+    }
+  }
+</script>
+</body>
+</html>
